@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'publish')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep -oP 'project\(\s*numops\s+VERSION\s+\K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Releasing version: ${VERSION}"
+
+      - name: Create git tag
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --title "v${{ steps.version.outputs.version }}" \
+            --generate-notes
+
+  publish:
+    name: Publish (${{ matrix.os }})
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .tool-versions
+          cache: pip
+
+      - name: Install Conan
+        run: pip install -r requirements.txt
+
+      - name: Detect Conan profile
+        run: conan profile detect --force
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.py', 'requirements.txt') }}
+          restore-keys: |
+            conan-${{ runner.os }}-
+
+      - name: Configure conan-stable remote
+        run: |
+          conan remote add conan-stable "${{ secrets.JFROG_URL }}/conan-stable"
+          conan remote login conan-stable "${{ secrets.JFROG_USER }}" -p "${{ secrets.JFROG_TOKEN }}"
+
+      - name: Build and publish release package
+        run: |
+          conan create . --version="${{ needs.release.outputs.version }}"
+          conan upload "numops/${{ needs.release.outputs.version }}" -r conan-stable --confirm
