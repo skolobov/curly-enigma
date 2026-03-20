@@ -1,4 +1,4 @@
-# mylib
+# numops
 
 A trivial C++ arithmetic library demonstrating a fully automated CI/CD pipeline
 with Conan 2 packaging, multi-platform builds, and label-driven release workflows.
@@ -11,7 +11,7 @@ packaging, and release automation.
 
 ## Library
 
-`mylib` provides basic arithmetic operations:
+`numops` provides basic arithmetic operations:
 
 - `add(int a, int b)` — addition
 - `subtract(int a, int b)` — subtraction
@@ -69,22 +69,22 @@ When a `publish`-labeled PR is merged:
 
 - Semantic versioning (SemVer)
 - Version source of truth: `CMakeLists.txt` `project(VERSION X.Y.Z)`
-- Pre-merge RC builds: `mylib/X.Y.Z-dev-<short-sha>`
-- Release builds: `mylib/X.Y.Z`
+- Pre-merge RC builds: `numops/X.Y.Z-dev-<short-sha>`
+- Release builds: `numops/X.Y.Z`
 
 ## Conan Package
 
 ### Installation
 
 ```shell
-conan install --requires=mylib/1.0.0
+conan install --requires=numops/1.0.0
 ```
 
 ### Usage in CMake
 
 ```cmake
-find_package(mylib CONFIG REQUIRED)
-target_link_libraries(your_target PRIVATE mylib::mylib)
+find_package(numops CONFIG REQUIRED)
+target_link_libraries(your_target PRIVATE numops::numops)
 ```
 
 ## Project Structure
@@ -93,7 +93,7 @@ target_link_libraries(your_target PRIVATE mylib::mylib)
 ├── CMakeLists.txt              # Build system (version source of truth)
 ├── conanfile.py                # Conan 2 package recipe
 ├── conan/profiles/             # Platform-specific Conan profiles
-├── include/mylib/              # Public headers
+├── include/numops/              # Public headers
 ├── src/                        # Implementation
 ├── tests/                      # Unit tests (GoogleTest)
 ├── test_package/               # Integration test (Conan consumer)
