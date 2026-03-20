@@ -21,9 +21,18 @@ packaging, and release automation.
 
 ### Prerequisites
 
-- CMake 3.21+
 - C++17 compatible compiler
-- Conan 2.x
+- [mise](https://mise.jdx.dev/) (or [asdf](https://asdf-vm.com/)) for tool
+  version management
+- [clang-format](https://clang.llvm.org/docs/ClangFormat.html) (install via
+  Homebrew: `brew install clang-format`)
+
+### Setup
+
+```shell
+mise install                       # installs Python, CMake, and linter tools
+pip install -r requirements.txt    # installs Conan
+```
 
 ### Build from source
 
@@ -87,18 +96,37 @@ find_package(numops CONFIG REQUIRED)
 target_link_libraries(your_target PRIVATE numops::numops)
 ```
 
+## Linting
+
+Linting runs automatically on every PR via GitHub Actions. To run locally:
+
+```shell
+clang-format --dry-run --Werror include/**/*.h src/*.cpp tests/*.cpp
+markdownlint-cli2 "**/*.md"
+yamllint -c .yamllint.yml .github/workflows/*.yml
+ruff check .
+```
+
 ## Project Structure
 
 ```text
 ├── CMakeLists.txt              # Build system (version source of truth)
 ├── conanfile.py                # Conan 2 package recipe
+├── .tool-versions              # Tool versions for mise/asdf
+├── requirements.txt            # Python dependencies (Conan)
+├── cmake/                      # CMake package config template
 ├── conan/profiles/             # Platform-specific Conan profiles
-├── include/numops/              # Public headers
+├── include/numops/             # Public headers
 ├── src/                        # Implementation
 ├── tests/                      # Unit tests (GoogleTest)
 ├── test_package/               # Integration test (Conan consumer)
 ├── scripts/                    # Repository setup automation
-└── .github/workflows/          # CI/CD pipelines
+├── .github/workflows/          # CI/CD pipelines
+├── .clang-format               # C++ formatting rules
+├── .clang-tidy                 # C++ static analysis config
+├── .mega-linter.yml            # MegaLinter configuration
+├── .markdownlint.yml           # Markdown linting rules
+└── .yamllint.yml               # YAML linting rules
 ```
 
 ## License

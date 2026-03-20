@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include <numops/numops.h>
+
+#include <gtest/gtest.h>
 
 #include <limits>
 
@@ -26,9 +27,7 @@ TEST(AddTest, Zero) {
     EXPECT_EQ(numops::add(0, -7), -7);
 }
 
-TEST(AddTest, LargeValues) {
-    EXPECT_EQ(numops::add(1000000, 2000000), 3000000);
-}
+TEST(AddTest, LargeValues) { EXPECT_EQ(numops::add(1000000, 2000000), 3000000); }
 
 // --- subtract() tests ---
 

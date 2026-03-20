@@ -1,7 +1,7 @@
+#include <numops/numops.h>
+
 #include <cstdlib>
 #include <iostream>
-
-#include <numops/numops.h>
 
 int main() {
     int result = 0;
