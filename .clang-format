@@ -5,7 +5,7 @@ SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 
 IncludeCategories:
-  - Regex: '^<mylib/'
+  - Regex: '^<numops/'
     Priority: 1
   - Regex: '^<gtest/'
     Priority: 2
