@@ -13,7 +13,9 @@ permissions:
 jobs:
   release:
     name: Release
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'publish')
+    if: >-
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'publish')
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -69,14 +71,6 @@ jobs:
       - name: Detect Conan profile
         run: conan profile detect --force
 
-      - name: Cache Conan packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2
-          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.py', 'requirements.txt') }}
-          restore-keys: |
-            conan-${{ runner.os }}-
-
       - name: Configure conan-stable remote
         run: |
           conan remote add conan-stable "${{ secrets.JFROG_URL }}/conan-stable"
@@ -86,3 +80,43 @@ jobs:
         run: |
           conan create . --version="${{ needs.release.outputs.version }}"
           conan upload "numops/${{ needs.release.outputs.version }}" -r conan-stable --confirm
+
+      - name: Package artifacts
+        shell: bash
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          PKG_PATH=$(conan cache path "numops/${VERSION}:*" 2>/dev/null || true)
+          mkdir -p dist
+          if [ -n "${PKG_PATH}" ] && [ -d "${PKG_PATH}" ]; then
+            tar czf "dist/numops-${VERSION}-${{ matrix.os }}.tar.gz" -C "${PKG_PATH}" .
+          else
+            echo "Package path not found, creating metadata-only artifact"
+            echo "numops/${VERSION} published to conan-stable" > "dist/numops-${VERSION}-${{ matrix.os }}.txt"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: numops-${{ matrix.os }}
+          path: dist/*
+
+  attach-artifacts:
+    name: Attach release artifacts
+    needs:
+      - release
+      - publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "v${{ needs.release.outputs.version }}" \
+            artifacts/* --clobber \
+            --repo "${{ github.repository }}"
