@@ -52,27 +52,34 @@ conan create .
 
 ### Pull Request Verification
 
-Every PR triggers:
+Every PR triggers two workflows automatically:
 
-- **Linting** — MegaLinter (YAML, Markdown, Python, CMake, shell) +
-  clang-format/clang-tidy for C++
-- **Build matrix** — Linux (GCC), macOS (Apple Clang), Windows (MSVC)
-- **Unit tests** — GoogleTest via CTest
-- **Dependency pinning** — Conan profiles ensure deterministic builds
+- **Lint** (`lint.yml`) — MegaLinter (YAML, Markdown, Python, CMake, shell) +
+  clang-format checks for C++ via `cpp-linter-action`
+- **Build** (`build.yml`) — CMake configure, build, and unit tests (ctest) on:
+  - Linux (ubuntu-latest, GCC)
+  - macOS (macos-latest, Apple Clang)
+  - Windows (windows-latest, MSVC)
 
 ### Label-Driven Workflows
 
-- **`verify`** — triggers integration tests (consumer project builds against
-  the library package)
-- **`publish`** — builds release candidate packages and uploads to `conan-rc`
+- **`verify` label** (`verify.yml`) — runs integration tests on all platforms
+  using `conan create` with RC version format (`X.Y.Z-dev-<short-sha>`)
+- **`publish` label** (`publish.yml`):
+  - Checks that the release version does not already exist in `conan-stable`
+  - Builds RC packages on all platforms
+  - Uploads RC packages to `conan-rc` remote (JFrog Artifactory)
 
 ### Release on Merge
 
-When a `publish`-labeled PR is merged:
+When a `publish`-labeled PR is merged (`release.yml`):
 
-1. Conan packages are published to `conan-stable`
+1. Version is extracted from `CMakeLists.txt`
 2. Git tag `vX.Y.Z` is created
-3. GitHub Release is created with release notes
+3. GitHub Release is created with auto-generated release notes
+4. Conan packages are built and published to `conan-stable` for all platforms
+5. Platform-specific `.tar.gz` artifacts (headers + libraries) are attached to
+   the GitHub Release
 
 ## Versioning
 
@@ -83,10 +90,18 @@ When a `publish`-labeled PR is merged:
 
 ## Conan Package
 
+### Remotes
+
+The project uses two Conan remotes hosted on JFrog Artifactory:
+
+- **`conan-rc`** — release candidate packages (pre-merge, `X.Y.Z-dev-<sha>`)
+- **`conan-stable`** — final release packages (post-merge, `X.Y.Z`)
+
 ### Installation
 
 ```shell
-conan install --requires=numops/1.0.0
+conan remote add conan-stable <JFROG_URL>/conan-stable
+conan install --requires=numops/<version> -r conan-stable
 ```
 
 ### Usage in CMake
@@ -95,6 +110,14 @@ conan install --requires=numops/1.0.0
 find_package(numops CONFIG REQUIRED)
 target_link_libraries(your_target PRIVATE numops::numops)
 ```
+
+### Required GitHub Secrets
+
+| Secret | Description |
+| ------------ | ---------------------------------------- |
+| `JFROG_URL` | JFrog Artifactory Conan API base URL |
+| `JFROG_USER` | JFrog username or email |
+| `JFROG_TOKEN` | JFrog access token |
 
 ## Linting
 
