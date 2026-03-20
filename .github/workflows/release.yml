@@ -85,14 +85,12 @@ jobs:
         shell: bash
         run: |
           VERSION="${{ needs.release.outputs.version }}"
-          PKG_PATH=$(conan cache path "numops/${VERSION}:*" 2>/dev/null || true)
+          PKG_ID=$(conan list "numops/${VERSION}:*" --format=json \
+            | jq -r 'to_entries[0].value | to_entries[0].value.revisions
+                      | to_entries[0].value.packages | keys[0]')
+          PKG_PATH=$(conan cache path "numops/${VERSION}:${PKG_ID}")
           mkdir -p dist
-          if [ -n "${PKG_PATH}" ] && [ -d "${PKG_PATH}" ]; then
-            tar czf "dist/numops-${VERSION}-${{ matrix.os }}.tar.gz" -C "${PKG_PATH}" .
-          else
-            echo "Package path not found, creating metadata-only artifact"
-            echo "numops/${VERSION} published to conan-stable" > "dist/numops-${VERSION}-${{ matrix.os }}.txt"
-          fi
+          tar czf "dist/numops-${VERSION}-${{ matrix.os }}.tar.gz" -C "${PKG_PATH}" .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
