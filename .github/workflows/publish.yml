@@ -49,7 +49,9 @@ jobs:
       - name: Check version does not exist in conan-stable
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if conan search "numops/${VERSION}" -r conan-stable 2>&1 | grep -q "Found"; then
+          EXISTS=$(conan list "numops/${VERSION}" -r conan-stable --format=json \
+            | jq --arg ref "numops/${VERSION}" '.["conan-stable"] | has($ref)')
+          if [ "${EXISTS}" = "true" ]; then
             echo "::error::Version ${VERSION} already exists in conan-stable. Bump the version."
             exit 1
           fi
@@ -82,14 +84,6 @@ jobs:
 
       - name: Detect Conan profile
         run: conan profile detect --force
-
-      - name: Cache Conan packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2
-          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.py', 'requirements.txt') }}
-          restore-keys: |
-            conan-${{ runner.os }}-
 
       - name: Configure conan-rc remote
         run: |
