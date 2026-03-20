@@ -1,3 +1,5 @@
+import os
+
 from conan import ConanFile
 from conan.tools.cmake import CMake, cmake_layout
 from conan.tools.build import can_run
@@ -20,5 +22,5 @@ class NumopsTestConan(ConanFile):
 
     def test(self):
         if can_run(self):
-            cmd = self.cpp.build.bindir
-            self.run(f"{cmd}/example", env="conanrun")
+            cmd = os.path.join(self.cpp.build.bindir, "example")
+            self.run(cmd, env="conanrun")
