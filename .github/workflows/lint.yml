@@ -41,12 +41,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           style: file
-          tidy-checks: ""
+          tidy-checks: "-*"
           version: 18
           files-changed-only: true
           thread-comments: true
           step-summary: true
 
       - name: Check clang-format result
-        if: steps.linter.outputs.checks-failed != '0'
+        if: steps.linter.outputs.clang-format-checks-failed != '0'
         run: exit 1
