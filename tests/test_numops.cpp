@@ -1,0 +1,78 @@
+#include <gtest/gtest.h>
+#include <numops/numops.h>
+
+#include <limits>
+
+// --- add() tests ---
+
+TEST(AddTest, PositiveNumbers) {
+    EXPECT_EQ(numops::add(2, 3), 5);
+    EXPECT_EQ(numops::add(100, 200), 300);
+}
+
+TEST(AddTest, NegativeNumbers) {
+    EXPECT_EQ(numops::add(-1, -1), -2);
+    EXPECT_EQ(numops::add(-10, -20), -30);
+}
+
+TEST(AddTest, MixedSigns) {
+    EXPECT_EQ(numops::add(-1, 1), 0);
+    EXPECT_EQ(numops::add(5, -3), 2);
+}
+
+TEST(AddTest, Zero) {
+    EXPECT_EQ(numops::add(0, 0), 0);
+    EXPECT_EQ(numops::add(42, 0), 42);
+    EXPECT_EQ(numops::add(0, -7), -7);
+}
+
+TEST(AddTest, LargeValues) {
+    EXPECT_EQ(numops::add(1000000, 2000000), 3000000);
+}
+
+// --- subtract() tests ---
+
+TEST(SubtractTest, PositiveResult) {
+    EXPECT_EQ(numops::subtract(5, 3), 2);
+    EXPECT_EQ(numops::subtract(100, 1), 99);
+}
+
+TEST(SubtractTest, NegativeResult) {
+    EXPECT_EQ(numops::subtract(3, 5), -2);
+    EXPECT_EQ(numops::subtract(0, 10), -10);
+}
+
+TEST(SubtractTest, Zero) {
+    EXPECT_EQ(numops::subtract(0, 0), 0);
+    EXPECT_EQ(numops::subtract(7, 7), 0);
+}
+
+TEST(SubtractTest, NegativeNumbers) {
+    EXPECT_EQ(numops::subtract(-5, -3), -2);
+    EXPECT_EQ(numops::subtract(-3, -5), 2);
+}
+
+// --- multiply() tests ---
+
+TEST(MultiplyTest, PositiveNumbers) {
+    EXPECT_EQ(numops::multiply(2, 3), 6);
+    EXPECT_EQ(numops::multiply(7, 8), 56);
+}
+
+TEST(MultiplyTest, Zero) {
+    EXPECT_EQ(numops::multiply(0, 100), 0);
+    EXPECT_EQ(numops::multiply(42, 0), 0);
+    EXPECT_EQ(numops::multiply(0, 0), 0);
+}
+
+TEST(MultiplyTest, NegativeNumbers) {
+    EXPECT_EQ(numops::multiply(-2, -3), 6);
+    EXPECT_EQ(numops::multiply(-4, 5), -20);
+    EXPECT_EQ(numops::multiply(6, -7), -42);
+}
+
+TEST(MultiplyTest, Identity) {
+    EXPECT_EQ(numops::multiply(1, 99), 99);
+    EXPECT_EQ(numops::multiply(99, 1), 99);
+    EXPECT_EQ(numops::multiply(-1, 42), -42);
+}
