@@ -55,3 +55,10 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/numopsConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/numops
 )
+
+# Testing
+option(BUILD_TESTING "Build unit tests" ON)
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
