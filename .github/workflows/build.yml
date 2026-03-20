@@ -21,25 +21,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version-file: .tool-versions
-          cache: pip
-
-      - name: Install Conan
-        run: pip install -r requirements.txt
-
-      - name: Detect Conan profile
-        run: conan profile detect --force
-
-      - name: Cache Conan packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.conan2
-          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.py', 'requirements.txt') }}
-          restore-keys: |
-            conan-${{ runner.os }}-
+      - name: Set up Conan
+        uses: skolobov/shared-workflows/actions/conan-setup@v1
 
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release

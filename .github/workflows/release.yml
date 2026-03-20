@@ -59,22 +59,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up Conan
+        uses: skolobov/shared-workflows/actions/conan-setup@v1
         with:
-          python-version-file: .tool-versions
-          cache: pip
-
-      - name: Install Conan
-        run: pip install -r requirements.txt
-
-      - name: Detect Conan profile
-        run: conan profile detect --force
+          cache-conan: "false"
 
       - name: Configure conan-stable remote
-        run: |
-          conan remote add conan-stable "${{ secrets.JFROG_URL }}/conan-stable"
-          conan remote login conan-stable "${{ secrets.JFROG_USER }}" -p "${{ secrets.JFROG_TOKEN }}"
+        uses: skolobov/shared-workflows/actions/conan-remote@v1
+        with:
+          remote-name: conan-stable
+          remote-url: ${{ secrets.JFROG_URL }}
+          remote-user: ${{ secrets.JFROG_USER }}
+          remote-token: ${{ secrets.JFROG_TOKEN }}
 
       - name: Build and publish release package
         run: |
