@@ -61,6 +61,7 @@ jobs:
           remote-token: ${{ secrets.JFROG_TOKEN }}
 
       - name: Build and upload RC package
+        shell: bash
         run: |
           RC="${{ needs.compute-version.outputs.rc_version }}"
           conan create . --version="${RC}"
@@ -103,6 +104,7 @@ jobs:
 
       - name: Install numops from conan-rc
         working-directory: tests/integration
+        shell: bash
         run: |
           RC="${{ needs.compute-version.outputs.rc_version }}"
           conan install . --requires="numops/${RC}" \
