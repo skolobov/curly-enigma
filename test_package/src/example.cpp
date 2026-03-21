@@ -21,6 +21,11 @@ int main() {
         result = EXIT_FAILURE;
     }
 
+    if (numops::divide(10, 3) != 3) {
+        std::cerr << "FAIL: divide(10, 3) != 3\n";
+        result = EXIT_FAILURE;
+    }
+
     if (result == 0) {
         std::cout << "numops integration test: all checks passed\n";
     }
