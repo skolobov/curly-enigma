@@ -70,6 +70,7 @@ Every PR triggers two workflows automatically:
 - **`verify` label** (`verify.yml`) — runs integration tests on all platforms
   using `conan create` with RC version format (`X.Y.Z-dev-<short-sha>`)
 - **`publish` label** (`publish.yml`):
+  - Validates that `CMakeLists.txt` version is bumped vs the PR base branch
   - Checks that the release version does not already exist in `conan-stable`
   - Builds RC packages on all platforms
   - Uploads RC packages to `conan-rc` remote (JFrog Artifactory)
@@ -91,6 +92,7 @@ When a `publish`-labeled PR is merged (`release.yml`):
 - Version source of truth: `CMakeLists.txt` `project(VERSION X.Y.Z)`
 - Pre-merge RC builds: `numops/X.Y.Z-dev-<short-sha>`
 - Release builds: `numops/X.Y.Z`
+- `publish`-labeled PRs must bump version above base branch before RC publish
 
 ## Conan Package
 
