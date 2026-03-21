@@ -88,6 +88,7 @@ jobs:
           remote-token: ${{ secrets.JFROG_TOKEN }}
 
       - name: Build and upload RC package
+        shell: bash
         run: |
           conan create . --version="${{ needs.check-version.outputs.rc_version }}"
           conan upload "numops/${{ needs.check-version.outputs.rc_version }}" -r conan-rc --confirm
