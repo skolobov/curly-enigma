@@ -47,7 +47,8 @@ gh api -X PUT "repos/${REPO}/branches/main/protection" \
       "C++ Lint",
       "ubuntu-latest",
       "macos-latest",
-      "windows-latest"
+      "windows-latest",
+      "Merge Gate"
     ]
   },
   "enforce_admins": false,
@@ -62,7 +63,7 @@ JSON
 echo "==> Repository setup complete"
 echo ""
 echo "Branch protection rules for main:"
-echo "  - Require status checks to pass (lint + build matrix)"
+echo "  - Require status checks to pass (lint + build matrix + merge gate)"
 echo "  - Require branches to be up to date before merging"
 echo "  - Enforce linear history (no merge commits)"
 echo "  - Auto-delete head branches after merge"

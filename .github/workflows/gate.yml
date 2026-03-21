@@ -1,0 +1,74 @@
+name: Merge Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+  pull_request_target:
+    types:
+      - labeled
+      - unlabeled
+
+jobs:
+  gate:
+    name: Merge Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check label-driven workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          REPO="${{ github.repository }}"
+          LABELS=$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
+            --json labels --jq '.labels[].name')
+
+          echo "PR labels: ${LABELS:-none}"
+
+          # jq filter to evaluate check status from an array of {name, state}
+          JQ_STATUS='if length == 0 then "pending"
+            elif all(.state == "SUCCESS") then "pass"
+            elif any(.state == "FAILURE") then "fail"
+            else "pending" end'
+
+          FAILED=false
+
+          if echo "${LABELS}" | grep -q "verify"; then
+            echo "verify label found — checking integration tests..."
+            VERIFY_STATUS=$(gh pr checks "${PR_NUMBER}" --repo "${REPO}" \
+              --json name,state \
+              --jq "[.[] | select(.name | startswith(\"Integration\"))]
+                    | ${JQ_STATUS}")
+
+            echo "  Verify status: ${VERIFY_STATUS}"
+            if [ "${VERIFY_STATUS}" = "fail" ]; then
+              echo "::error::Integration tests failed."
+              FAILED=true
+            elif [ "${VERIFY_STATUS}" = "pending" ]; then
+              echo "::warning::Integration tests still running."
+            fi
+          fi
+
+          if echo "${LABELS}" | grep -q "publish"; then
+            echo "publish label found — checking RC publish..."
+            PUBLISH_STATUS=$(gh pr checks "${PR_NUMBER}" --repo "${REPO}" \
+              --json name,state \
+              --jq "[.[] | select(
+                      .name | startswith(\"Publish RC\")
+                      or . == \"Check version\")]
+                    | ${JQ_STATUS}")
+
+            echo "  Publish status: ${PUBLISH_STATUS}"
+            if [ "${PUBLISH_STATUS}" = "fail" ]; then
+              echo "::error::Publish RC workflow failed."
+              FAILED=true
+            elif [ "${PUBLISH_STATUS}" = "pending" ]; then
+              echo "::warning::Publish RC workflow still running."
+            fi
+          fi
+
+          if [ "${FAILED}" = "true" ]; then
+            exit 1
+          fi
+
+          echo "Merge gate passed."
