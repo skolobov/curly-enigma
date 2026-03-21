@@ -14,10 +14,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+        include:
+          - os: ubuntu-latest
+            profile: conan/profiles/linux-x86_64
+          - os: macos-latest
+            profile: conan/profiles/macos-armv8
+          - os: windows-latest
+            profile: conan/profiles/windows-x86_64
 
     steps:
       - name: Checkout
@@ -25,6 +28,8 @@ jobs:
 
       - name: Set up Conan
         uses: skolobov/shared-workflows/actions/conan-setup@v1
+        with:
+          profile: ${{ matrix.profile }}
 
       - name: Compute RC version
         id: version
