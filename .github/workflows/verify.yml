@@ -107,24 +107,22 @@ jobs:
         shell: bash
         run: |
           RC="${{ needs.compute-version.outputs.rc_version }}"
-          conan install . --requires="numops/${RC}" \
+          conan install --requires="numops/${RC}" \
+            --generator=CMakeToolchain --generator=CMakeDeps \
+            --output-folder=build/generators \
             --build=missing -r conan-rc
 
       - name: Build consumer project
         working-directory: tests/integration
         shell: bash
         run: |
-          cmake --preset conan-release
-          cmake --build --preset conan-release
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=build/generators/conan_toolchain.cmake
+          cmake --build build --config Release
 
       - name: Run consumer test
         working-directory: tests/integration
         shell: bash
         run: |
-          BUILD_DIR=$(cmake --preset conan-release 2>&1 \
-            | grep -oE 'Build files.*: .*' | sed 's/Build files.*: //' || true)
-          if [ -z "${BUILD_DIR}" ]; then
-            BUILD_DIR="build/Release"
-          fi
-          # Find and run the consumer executable
-          find build -name "consumer" -o -name "consumer.exe" | head -1 | xargs -I{} "{}"
+          find build -name "consumer" -o -name "consumer.exe" \
+            | head -1 | xargs -I{} "{}"
