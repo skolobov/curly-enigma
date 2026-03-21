@@ -7,9 +7,29 @@ on:
       - synchronize
 
 jobs:
-  integration-test:
-    name: Integration (${{ matrix.os }})
+  compute-version:
+    name: Compute RC version
     if: contains(github.event.pull_request.labels.*.name, 'verify')
+    runs-on: ubuntu-latest
+    outputs:
+      rc_version: ${{ steps.version.outputs.rc_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Compute RC version
+        id: version
+        run: |
+          VERSION=$(grep -oE 'project\(\s*numops\s+VERSION\s+[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt \
+            | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          SHORT_SHA=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
+          RC_VERSION="${VERSION}-dev-${SHORT_SHA}"
+          echo "rc_version=${RC_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "RC version: ${RC_VERSION}"
+
+  upload-rc:
+    name: Upload RC (${{ matrix.os }})
+    needs: compute-version
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -30,15 +50,79 @@ jobs:
         uses: skolobov/shared-workflows/actions/conan-setup@v1
         with:
           profile: ${{ matrix.profile }}
+          cache-conan: "false"
 
-      - name: Compute RC version
-        id: version
+      - name: Configure conan-rc remote
+        uses: skolobov/shared-workflows/actions/conan-remote@v1
+        with:
+          remote-name: conan-rc
+          remote-url: ${{ secrets.JFROG_URL }}
+          remote-user: ${{ secrets.JFROG_USER }}
+          remote-token: ${{ secrets.JFROG_TOKEN }}
+
+      - name: Build and upload RC package
+        run: |
+          RC="${{ needs.compute-version.outputs.rc_version }}"
+          conan create . --version="${RC}"
+          conan upload "numops/${RC}" -r conan-rc --confirm
+
+  consumer-test:
+    name: Consumer (${{ matrix.os }})
+    needs:
+      - compute-version
+      - upload-rc
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            profile: conan/profiles/linux-x86_64
+          - os: macos-latest
+            profile: conan/profiles/macos-armv8
+          - os: windows-latest
+            profile: conan/profiles/windows-x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Conan
+        uses: skolobov/shared-workflows/actions/conan-setup@v1
+        with:
+          profile: ${{ matrix.profile }}
+          cache-conan: "false"
+
+      - name: Configure conan-rc remote
+        uses: skolobov/shared-workflows/actions/conan-remote@v1
+        with:
+          remote-name: conan-rc
+          remote-url: ${{ secrets.JFROG_URL }}
+          remote-user: ${{ secrets.JFROG_USER }}
+          remote-token: ${{ secrets.JFROG_TOKEN }}
+
+      - name: Install numops from conan-rc
+        working-directory: tests/integration
+        run: |
+          RC="${{ needs.compute-version.outputs.rc_version }}"
+          conan install . --requires="numops/${RC}" \
+            --build=missing -r conan-rc
+
+      - name: Build consumer project
+        working-directory: tests/integration
         shell: bash
         run: |
-          VERSION=$(grep -oE 'project\(\s*numops\s+VERSION\s+[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt \
-            | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-          SHORT_SHA=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
-          echo "rc_version=${VERSION}-dev-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          cmake --preset conan-release
+          cmake --build --preset conan-release
 
-      - name: Run integration test
-        run: conan create . --version="${{ steps.version.outputs.rc_version }}"
+      - name: Run consumer test
+        working-directory: tests/integration
+        shell: bash
+        run: |
+          BUILD_DIR=$(cmake --preset conan-release 2>&1 \
+            | grep -oE 'Build files.*: .*' | sed 's/Build files.*: //' || true)
+          if [ -z "${BUILD_DIR}" ]; then
+            BUILD_DIR="build/Release"
+          fi
+          # Find and run the consumer executable
+          find build -name "consumer" -o -name "consumer.exe" | head -1 | xargs -I{} "{}"
