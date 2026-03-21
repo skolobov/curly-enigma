@@ -75,3 +75,33 @@ TEST(MultiplyTest, Identity) {
     EXPECT_EQ(numops::multiply(99, 1), 99);
     EXPECT_EQ(numops::multiply(-1, 42), -42);
 }
+
+// --- divide() tests ---
+
+TEST(DivideTest, ExactDivision) {
+    EXPECT_EQ(numops::divide(10, 2), 5);
+    EXPECT_EQ(numops::divide(100, 4), 25);
+}
+
+TEST(DivideTest, IntegerTruncation) {
+    EXPECT_EQ(numops::divide(7, 2), 3);
+    EXPECT_EQ(numops::divide(1, 3), 0);
+}
+
+TEST(DivideTest, NegativeNumbers) {
+    EXPECT_EQ(numops::divide(-10, 2), -5);
+    EXPECT_EQ(numops::divide(10, -2), -5);
+    EXPECT_EQ(numops::divide(-10, -2), 5);
+}
+
+TEST(DivideTest, DivideByZero) { EXPECT_EQ(numops::divide(42, 0), 0); }
+
+TEST(DivideTest, ZeroDividend) {
+    EXPECT_EQ(numops::divide(0, 5), 0);
+    EXPECT_EQ(numops::divide(0, -3), 0);
+}
+
+TEST(DivideTest, Identity) {
+    EXPECT_EQ(numops::divide(99, 1), 99);
+    EXPECT_EQ(numops::divide(-42, 1), -42);
+}

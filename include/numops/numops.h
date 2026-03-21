@@ -12,6 +12,10 @@ int subtract(int a, int b);
 /// Returns the product of two integers.
 int multiply(int a, int b);
 
+/// Returns the result of integer division (a / b).
+/// If b is zero, returns 0.
+int divide(int a, int b);
+
 }  // namespace numops
 
 #endif  // NUMOPS_NUMOPS_H

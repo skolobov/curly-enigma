@@ -21,6 +21,11 @@ int main() {
         result = EXIT_FAILURE;
     }
 
+    if (numops::divide(10, 3) != 3) {
+        std::cerr << "FAIL: divide(10, 3) != 3\n";
+        result = EXIT_FAILURE;
+    }
+
     if (result == EXIT_SUCCESS) {
         std::cout << "numops consumer test: all checks passed\n";
     }
