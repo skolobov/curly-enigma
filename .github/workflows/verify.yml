@@ -124,5 +124,6 @@ jobs:
         working-directory: tests/integration
         shell: bash
         run: |
-          find build -name "consumer" -o -name "consumer.exe" \
-            | head -1 | xargs -I{} "{}"
+          CONSUMER=$(find build \( -name "consumer" -o -name "consumer.exe" \) -type f | head -1)
+          echo "Running: ${CONSUMER}"
+          "${CONSUMER}"
