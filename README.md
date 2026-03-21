@@ -31,8 +31,12 @@ packaging, and release automation.
 
 ```shell
 mise install                       # installs Python, CMake, and linter tools
-pip install -r requirements.txt    # installs Conan
+pip install -r requirements.txt    # installs Conan into .venv
 ```
+
+Tool versions are pinned in `.tool-versions` (compatible with both mise and asdf).
+A `mise.toml` configures a Python virtual environment (`.venv/`) so that IDE
+tools like Pylance and mypy can resolve Conan imports.
 
 ### Build from source
 
