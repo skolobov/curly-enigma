@@ -18,6 +18,9 @@ conaninfo.txt
 conan.lock
 test_package/build/
 
+# Python virtual environment
+.venv/
+
 # IDE files
 .vscode/
 .idea/

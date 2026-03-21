@@ -1,0 +1,6 @@
+# Local development environment configuration for mise (https://mise.jdx.dev/)
+# Tool versions are managed in .tool-versions (compatible with asdf and CI)
+# This file only configures the Python virtual environment for local development
+
+[env]
+_.python.venv = { path = ".venv", create = true }
