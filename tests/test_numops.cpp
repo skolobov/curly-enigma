@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <limits>
+#include <climits>
 
 // --- add() tests ---
 
@@ -29,6 +29,16 @@ TEST(AddTest, Zero) {
 
 TEST(AddTest, LargeValues) { EXPECT_EQ(numops::add(1000000, 2000000), 3000000); }
 
+TEST(AddTest, Commutativity) {
+    EXPECT_EQ(numops::add(3, 7), numops::add(7, 3));
+    EXPECT_EQ(numops::add(-5, 12), numops::add(12, -5));
+}
+
+TEST(AddTest, BoundaryValues) {
+    EXPECT_EQ(numops::add(INT_MAX, 0), INT_MAX);
+    EXPECT_EQ(numops::add(INT_MIN, 0), INT_MIN);
+}
+
 // --- subtract() tests ---
 
 TEST(SubtractTest, PositiveResult) {
@@ -49,6 +59,12 @@ TEST(SubtractTest, Zero) {
 TEST(SubtractTest, NegativeNumbers) {
     EXPECT_EQ(numops::subtract(-5, -3), -2);
     EXPECT_EQ(numops::subtract(-3, -5), 2);
+}
+
+TEST(SubtractTest, BoundaryValues) {
+    EXPECT_EQ(numops::subtract(INT_MAX, 0), INT_MAX);
+    EXPECT_EQ(numops::subtract(INT_MIN, 0), INT_MIN);
+    EXPECT_EQ(numops::subtract(INT_MAX, INT_MAX), 0);
 }
 
 // --- multiply() tests ---
@@ -74,6 +90,18 @@ TEST(MultiplyTest, Identity) {
     EXPECT_EQ(numops::multiply(1, 99), 99);
     EXPECT_EQ(numops::multiply(99, 1), 99);
     EXPECT_EQ(numops::multiply(-1, 42), -42);
+}
+
+TEST(MultiplyTest, Commutativity) {
+    EXPECT_EQ(numops::multiply(3, 7), numops::multiply(7, 3));
+    EXPECT_EQ(numops::multiply(-4, 5), numops::multiply(5, -4));
+}
+
+TEST(MultiplyTest, BoundaryValues) {
+    EXPECT_EQ(numops::multiply(INT_MAX, 0), 0);
+    EXPECT_EQ(numops::multiply(INT_MIN, 0), 0);
+    EXPECT_EQ(numops::multiply(INT_MAX, 1), INT_MAX);
+    EXPECT_EQ(numops::multiply(INT_MIN, 1), INT_MIN);
 }
 
 // --- divide() tests ---
@@ -104,4 +132,11 @@ TEST(DivideTest, ZeroDividend) {
 TEST(DivideTest, Identity) {
     EXPECT_EQ(numops::divide(99, 1), 99);
     EXPECT_EQ(numops::divide(-42, 1), -42);
+}
+
+TEST(DivideTest, BoundaryValues) {
+    EXPECT_EQ(numops::divide(INT_MAX, 1), INT_MAX);
+    EXPECT_EQ(numops::divide(INT_MIN, 1), INT_MIN);
+    EXPECT_EQ(numops::divide(INT_MAX, INT_MAX), 1);
+    EXPECT_EQ(numops::divide(INT_MIN, INT_MIN), 1);
 }

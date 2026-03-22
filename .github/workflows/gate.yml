@@ -58,7 +58,7 @@ jobs:
             PUBLISH_STATUS=$(gh pr checks "${PR_NUMBER}" --repo "${REPO}" \
               --json name,state \
               --jq "[.[] | select(
-                      .name | startswith(\"Publish RC\")
+                      (.name | startswith(\"Publish RC\"))
                       or .name == \"Check version\")]
                     | ${JQ_STATUS}")
 
