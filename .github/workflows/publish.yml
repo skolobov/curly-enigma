@@ -80,45 +80,13 @@ jobs:
           echo "Version ${VERSION} is available."
 
   publish-rc:
-    name: Publish RC (${{ matrix.os }})
+    name: Publish RC
     needs: check-version
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            profile: conan/profiles/linux-x86_64
-          - os: macos-latest
-            profile: conan/profiles/macos-armv8
-          - os: windows-latest
-            profile: conan/profiles/windows-x86_64
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Set up Conan
-        uses: skolobov/shared-workflows/actions/conan-setup@v1
-        with:
-          profile: ${{ matrix.profile }}
-          cache-conan: "false"
-
-      - name: Configure conan-rc remote
-        uses: skolobov/shared-workflows/actions/conan-remote@v1
-        with:
-          remote-name: conan-rc
-          remote-url: ${{ secrets.JFROG_URL }}
-          remote-user: ${{ secrets.JFROG_USER }}
-          remote-token: ${{ secrets.JFROG_TOKEN }}
-
-      - name: Build and upload RC package
-        shell: bash
-        run: |
-          conan lock create . --version="${{ needs.check-version.outputs.rc_version }}" \
-            --profile:host="${{ matrix.profile }}" \
-            --profile:build="${{ matrix.profile }}" \
-            --lockfile-out=conan.lock
-          conan create . --version="${{ needs.check-version.outputs.rc_version }}" \
-            --lockfile=conan.lock
-          conan upload "numops/${{ needs.check-version.outputs.rc_version }}" -r conan-rc --confirm
+    uses: skolobov/shared-workflows/.github/workflows/conan-build-upload.yml@v1
+    with:
+      version: ${{ needs.check-version.outputs.rc_version }}
+      remote-name: conan-rc
+    secrets:
+      remote-url: ${{ secrets.JFROG_URL }}
+      remote-user: ${{ secrets.JFROG_USER }}
+      remote-token: ${{ secrets.JFROG_TOKEN }}
