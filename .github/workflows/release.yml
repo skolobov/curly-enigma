@@ -26,7 +26,8 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          VERSION=$(grep -oP 'project\(\s*numops\s+VERSION\s+\K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt)
+          VERSION=$(grep -oE 'project\(\s*numops\s+VERSION\s+[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt \
+            | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Releasing version: ${VERSION}"
 
