@@ -1,0 +1,45 @@
+name: Re-trigger Merge Gate
+
+on:
+  workflow_run:
+    workflows:
+      - Verify
+      - Publish RC
+    types:
+      - completed
+
+jobs:
+  retrigger:
+    name: Re-trigger Merge Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find PR and re-run Merge Gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the PR number from the triggering workflow run
+          PR_NUMBER=$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}" \
+            --jq '.pull_requests[0].number // empty')
+
+          if [ -z "${PR_NUMBER}" ]; then
+            echo "No PR associated with this workflow run. Skipping."
+            exit 0
+          fi
+
+          echo "PR #${PR_NUMBER} — re-triggering Merge Gate..."
+
+          # Find the latest Merge Gate run for this PR
+          GATE_RUN_ID=$(gh pr checks "${PR_NUMBER}" --repo "${{ github.repository }}" \
+            --json name,link \
+            --jq '.[] | select(.name == "Merge Gate") | .link' \
+            | grep -oE '[0-9]+/job/[0-9]+' | head -1 \
+            | cut -d'/' -f1)
+
+          if [ -z "${GATE_RUN_ID}" ]; then
+            echo "No Merge Gate run found for PR #${PR_NUMBER}. Skipping."
+            exit 0
+          fi
+
+          echo "Re-running Merge Gate workflow run ${GATE_RUN_ID}..."
+          gh run rerun "${GATE_RUN_ID}" --repo "${{ github.repository }}" || true
