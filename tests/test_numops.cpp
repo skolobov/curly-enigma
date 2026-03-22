@@ -140,3 +140,19 @@ TEST(DivideTest, BoundaryValues) {
     EXPECT_EQ(numops::divide(INT_MAX, INT_MAX), 1);
     EXPECT_EQ(numops::divide(INT_MIN, INT_MIN), 1);
 }
+
+// --- abs() tests ---
+
+TEST(AbsTest, PositiveNumbers) {
+    EXPECT_EQ(numops::abs(5), 5);
+    EXPECT_EQ(numops::abs(42), 42);
+}
+
+TEST(AbsTest, NegativeNumbers) {
+    EXPECT_EQ(numops::abs(-5), 5);
+    EXPECT_EQ(numops::abs(-42), 42);
+}
+
+TEST(AbsTest, Zero) { EXPECT_EQ(numops::abs(0), 0); }
+
+TEST(AbsTest, BoundaryValues) { EXPECT_EQ(numops::abs(INT_MAX), INT_MAX); }
