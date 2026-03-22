@@ -155,4 +155,7 @@ TEST(AbsTest, NegativeNumbers) {
 
 TEST(AbsTest, Zero) { EXPECT_EQ(numops::abs(0), 0); }
 
-TEST(AbsTest, BoundaryValues) { EXPECT_EQ(numops::abs(INT_MAX), INT_MAX); }
+TEST(AbsTest, BoundaryValues) {
+    EXPECT_EQ(numops::abs(INT_MAX), INT_MAX);
+    EXPECT_EQ(numops::abs(INT_MIN), INT_MAX);  // saturating: -INT_MIN overflows
+}

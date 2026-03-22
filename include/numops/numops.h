@@ -17,6 +17,7 @@ int multiply(int a, int b);
 int divide(int a, int b);
 
 /// Returns the absolute value of an integer.
+/// For INT_MIN, returns INT_MAX (saturating behavior).
 int abs(int a);
 
 }  // namespace numops
