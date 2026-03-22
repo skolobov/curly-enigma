@@ -34,6 +34,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Generate compile_commands.json
+        run: cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
       - name: C++ Linter
         uses: cpp-linter/cpp-linter-action@v2
         id: linter
@@ -41,7 +44,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           style: file
-          tidy-checks: "-*"
+          tidy-checks: ""
+          database: build
           version: 18
           files-changed-only: true
           thread-comments: true
