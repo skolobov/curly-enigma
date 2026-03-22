@@ -37,7 +37,9 @@ jobs:
             echo "verify label found — checking integration tests..."
             VERIFY_STATUS=$(gh pr checks "${PR_NUMBER}" --repo "${REPO}" \
               --json name,state \
-              --jq "[.[] | select(.name | startswith(\"Integration\"))]
+              --jq "[.[] | select(
+                      .name
+                      | (startswith(\"Upload RC (\") or startswith(\"Consumer (\")))]
                     | ${JQ_STATUS}")
 
             echo "  Verify status: ${VERIFY_STATUS}"
@@ -55,7 +57,7 @@ jobs:
               --json name,state \
               --jq "[.[] | select(
                       .name | startswith(\"Publish RC\")
-                      or . == \"Check version\")]
+                      or .name == \"Check version\")]
                     | ${JQ_STATUS}")
 
             echo "  Publish status: ${PUBLISH_STATUS}"
