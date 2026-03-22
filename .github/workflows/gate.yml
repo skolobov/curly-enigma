@@ -32,6 +32,7 @@ jobs:
             else "pending" end'
 
           FAILED=false
+          BLOCKED=false
 
           if echo "${LABELS}" | grep -q "verify"; then
             echo "verify label found — checking integration tests..."
@@ -47,7 +48,8 @@ jobs:
               echo "::error::Integration tests failed."
               FAILED=true
             elif [ "${VERIFY_STATUS}" = "pending" ]; then
-              echo "::warning::Integration tests still running."
+              echo "::error::Integration tests are still running or missing."
+              BLOCKED=true
             fi
           fi
 
@@ -65,8 +67,13 @@ jobs:
               echo "::error::Publish RC workflow failed."
               FAILED=true
             elif [ "${PUBLISH_STATUS}" = "pending" ]; then
-              echo "::warning::Publish RC workflow still running."
+              echo "::error::Publish RC checks are still running or missing."
+              BLOCKED=true
             fi
+          fi
+
+          if [ "${BLOCKED}" = "true" ]; then
+            exit 1
           fi
 
           if [ "${FAILED}" = "true" ]; then

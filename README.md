@@ -70,6 +70,7 @@ Every PR triggers two workflows automatically:
 - **`verify` label** (`verify.yml`) — runs integration tests on all platforms
   using `conan create` with RC version format (`X.Y.Z-dev-<short-sha>`)
 - **`publish` label** (`publish.yml`):
+  - Validates that `CMakeLists.txt` version is bumped vs the PR base branch
   - Checks that the release version does not already exist in `conan-stable`
   - Builds RC packages on all platforms
   - Uploads RC packages to `conan-rc` remote (JFrog Artifactory)
@@ -91,6 +92,7 @@ When a `publish`-labeled PR is merged (`release.yml`):
 - Version source of truth: `CMakeLists.txt` `project(VERSION X.Y.Z)`
 - Pre-merge RC builds: `numops/X.Y.Z-dev-<short-sha>`
 - Release builds: `numops/X.Y.Z`
+- `publish`-labeled PRs must bump version above base branch before RC publish
 
 ## Conan Package
 
@@ -114,6 +116,15 @@ conan install --requires=numops/<version> -r conan-stable
 find_package(numops CONFIG REQUIRED)
 target_link_libraries(your_target PRIVATE numops::numops)
 ```
+
+### Deterministic Builds
+
+- Conan CLI is pinned (`conan==2.26.2`) and CI uses checked-in platform
+  profiles from `conan/profiles/`.
+- RC/release workflows generate and use Conan lockfiles (`conan lock create` +
+  `--lockfile`) before `conan create`/`conan install`.
+- Unit-test dependency `googletest` is pinned to immutable commit
+  `b514bdc898e2951020cbdca1304b75f5950d1f59`.
 
 ### Required GitHub Secrets
 

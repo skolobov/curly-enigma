@@ -64,7 +64,11 @@ jobs:
         shell: bash
         run: |
           RC="${{ needs.compute-version.outputs.rc_version }}"
-          conan create . --version="${RC}"
+          conan lock create . --version="${RC}" \
+            --profile:host="${{ matrix.profile }}" \
+            --profile:build="${{ matrix.profile }}" \
+            --lockfile-out=conan.lock
+          conan create . --version="${RC}" --lockfile=conan.lock
           conan upload "numops/${RC}" -r conan-rc --confirm
 
   consumer-test:
@@ -107,10 +111,17 @@ jobs:
         shell: bash
         run: |
           RC="${{ needs.compute-version.outputs.rc_version }}"
+          conan lock create --requires="numops/${RC}" \
+            --profile:host="${GITHUB_WORKSPACE}/${{ matrix.profile }}" \
+            --profile:build="${GITHUB_WORKSPACE}/${{ matrix.profile }}" \
+            --lockfile-out=consumer.lock \
+            -r conan-rc
           conan install --requires="numops/${RC}" \
             --generator=CMakeToolchain --generator=CMakeDeps \
             --output-folder=build/generators \
-            --build=missing -r conan-rc
+            --build=missing \
+            --lockfile=consumer.lock \
+            -r conan-rc
 
       - name: Build consumer project
         working-directory: tests/integration
