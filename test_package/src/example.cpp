@@ -26,6 +26,11 @@ int main() {
         result = EXIT_FAILURE;
     }
 
+    if (numops::abs(-7) != 7) {
+        std::cerr << "FAIL: abs(-7) != 7\n";
+        result = EXIT_FAILURE;
+    }
+
     if (result == 0) {
         std::cout << "numops integration test: all checks passed\n";
     }
