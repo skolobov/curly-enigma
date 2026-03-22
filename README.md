@@ -117,6 +117,15 @@ find_package(numops CONFIG REQUIRED)
 target_link_libraries(your_target PRIVATE numops::numops)
 ```
 
+### Deterministic Builds
+
+- Conan CLI is pinned (`conan==2.26.2`) and CI uses checked-in platform
+  profiles from `conan/profiles/`.
+- RC/release workflows generate and use Conan lockfiles (`conan lock create` +
+  `--lockfile`) before `conan create`/`conan install`.
+- Unit-test dependency `googletest` is pinned to immutable commit
+  `b514bdc898e2951020cbdca1304b75f5950d1f59`.
+
 ### Required GitHub Secrets
 
 | Secret | Description |

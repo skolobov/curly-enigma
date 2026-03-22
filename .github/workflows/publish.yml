@@ -113,5 +113,10 @@ jobs:
       - name: Build and upload RC package
         shell: bash
         run: |
-          conan create . --version="${{ needs.check-version.outputs.rc_version }}"
+          conan lock create . --version="${{ needs.check-version.outputs.rc_version }}" \
+            --profile:host="${{ matrix.profile }}" \
+            --profile:build="${{ matrix.profile }}" \
+            --lockfile-out=conan.lock
+          conan create . --version="${{ needs.check-version.outputs.rc_version }}" \
+            --lockfile=conan.lock
           conan upload "numops/${{ needs.check-version.outputs.rc_version }}" -r conan-rc --confirm

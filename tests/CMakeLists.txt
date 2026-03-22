@@ -3,7 +3,9 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG v1.15.2
+  # Pinned to the immutable commit for v1.15.2.
+  GIT_TAG b514bdc898e2951020cbdca1304b75f5950d1f59
+  GIT_SHALLOW TRUE
 )
 
 # Prevent GoogleTest from overriding our compiler/linker options (Windows)

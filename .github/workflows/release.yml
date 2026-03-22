@@ -79,7 +79,12 @@ jobs:
       - name: Build and publish release package
         shell: bash
         run: |
-          conan create . --version="${{ needs.release.outputs.version }}"
+          conan lock create . --version="${{ needs.release.outputs.version }}" \
+            --profile:host="${{ matrix.profile }}" \
+            --profile:build="${{ matrix.profile }}" \
+            --lockfile-out=conan.lock
+          conan create . --version="${{ needs.release.outputs.version }}" \
+            --lockfile=conan.lock
           conan upload "numops/${{ needs.release.outputs.version }}" -r conan-stable --confirm
 
       - name: Package artifacts
