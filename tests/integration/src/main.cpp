@@ -26,6 +26,11 @@ int main() {
         result = EXIT_FAILURE;
     }
 
+    if (numops::abs(-7) != 7) {
+        std::cerr << "FAIL: abs(-7) != 7\n";
+        result = EXIT_FAILURE;
+    }
+
     if (result == EXIT_SUCCESS) {
         std::cout << "numops consumer test: all checks passed\n";
     }
