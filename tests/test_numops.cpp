@@ -1,8 +1,8 @@
 #include <numops/numops.h>
 
-#include <climits>
-
 #include <gtest/gtest.h>
+
+#include <climits>
 
 // --- add() tests ---
 
