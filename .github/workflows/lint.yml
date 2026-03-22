@@ -47,6 +47,7 @@ jobs:
           tidy-checks: ""
           database: build
           version: 18
+          ignore: "test_package|tests/integration"
           files-changed-only: true
           thread-comments: true
           step-summary: true
