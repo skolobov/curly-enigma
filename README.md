@@ -67,13 +67,23 @@ Every PR triggers two workflows automatically:
 
 ### Label-Driven Workflows
 
-- **`verify` label** (`verify.yml`) — runs integration tests on all platforms
-  using `conan create` with RC version format (`X.Y.Z-dev-<short-sha>`)
+- **`verify` label** (`verify.yml`) — full end-to-end integration test:
+  1. Builds RC packages (`X.Y.Z-dev-<short-sha>`) and uploads to `conan-rc`
+  2. A separate consumer project installs the package from `conan-rc` via
+     `conan install --requires=numops/<ref>`
+  3. Consumer builds with `find_package(numops CONFIG REQUIRED)`, links, and runs
+  4. All three steps run on every platform (Linux, macOS, Windows)
 - **`publish` label** (`publish.yml`):
   - Validates that `CMakeLists.txt` version is bumped vs the PR base branch
   - Checks that the release version does not already exist in `conan-stable`
   - Builds RC packages on all platforms
   - Uploads RC packages to `conan-rc` remote (JFrog Artifactory)
+
+> **Note:** The repo has two consumer test mechanisms: `test_package/` is the
+> standard Conan test package (validates the package during `conan create`),
+> while `tests/integration/` is a standalone CMake consumer that tests
+> installation from a real Conan remote — exercising the full dependency
+> resolution, download, and linking flow.
 
 ### Release on Merge
 
@@ -157,7 +167,8 @@ ruff check .
 ├── include/numops/             # Public headers
 ├── src/                        # Implementation
 ├── tests/                      # Unit tests (GoogleTest)
-├── test_package/               # Integration test (Conan consumer)
+├── tests/integration/          # E2E consumer test (installs from remote)
+├── test_package/               # Conan test package (local cache validation)
 ├── scripts/                    # Repository setup automation
 ├── .github/workflows/          # CI/CD pipelines
 ├── .clang-format               # C++ formatting rules
